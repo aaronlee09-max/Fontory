@@ -2,16 +2,19 @@
   const FALLBACK_MUSIC = {
     id: "default",
     name: "Fontory 기본 음악",
-    file: "./assets/fontory-download-music.mp3?v=20260929-padded1",
+    file: ASSET_BASE + "assets/fontory-download-music.mp3?v=20260929-padded1",
   };
-  const MANIFEST_URL = "./assets/fontory-music/index.json";
+  const ASSET_BASE = "https://media.githubusercontent.com/media/aaronlee09-max/datatronics/main/";
+  const MANIFEST_URL = ASSET_BASE + "assets/fontory-music/index.json";
   const API_BASE = "https://fontory-api.fontory.workers.dev";
   let catalogPromise = null;
   let selectedPromise = null;
 
   const normalize = (item) => {
     if (!item || !item.id || !item.file) return null;
-    return { id: String(item.id), name: String(item.name || item.id), file: String(item.file) };
+    const rawFile = String(item.file);
+    const file = /^https?:\\/\\//i.test(rawFile) ? rawFile : new URL(rawFile.replace(/^\\.\\//, ""), ASSET_BASE).href;
+    return { id: String(item.id), name: String(item.name || item.id), file };
   };
 
   async function loadCatalog() {
