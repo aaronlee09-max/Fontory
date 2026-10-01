@@ -864,3 +864,21 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
 @media(prefers-reduced-motion:reduce){
   .typing-bg-text{animation:none;clip-path:inset(0 0 0 0);opacity:.45}
 }
+
+
+/* Mobile auth centering fix */
+@media(max-width:620px){
+  #fontoryAuth{
+    display:grid;
+    place-items:center;
+    justify-items:center;
+    padding:14px;
+  }
+  #fontoryAuth .auth-card{
+    position:relative;
+    left:50%;
+    margin-left:0;
+    margin-right:0;
+    transform:translateX(-50%);
+  }
+}
