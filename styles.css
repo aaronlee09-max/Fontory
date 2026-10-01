@@ -949,3 +949,33 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
     word-break:keep-all;
   }
 }
+
+/* Mobile hero typing title: keep the blue text fully inside the viewport */
+.hero-typing-title{
+  overflow:visible !important;
+}
+.hero-typing-title > span{
+  display:inline !important;
+  white-space:normal !important;
+  overflow:visible !important;
+}
+@media(max-width:620px){
+  .hero-typing-title{
+    display:block;
+    width:100%;
+    max-width:100%;
+    margin:42px 0 20px;
+    padding:0;
+    font-size:clamp(42px,12.5vw,76px);
+    line-height:1.02;
+    letter-spacing:-.055em;
+    overflow:visible !important;
+  }
+  .hero-typing-title > span{
+    display:inline !important;
+    white-space:normal !important;
+    overflow:visible !important;
+    overflow-wrap:break-word !important;
+    word-break:keep-all !important;
+  }
+}
