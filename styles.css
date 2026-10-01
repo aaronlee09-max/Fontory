@@ -882,3 +882,49 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
     transform:translateX(-50%);
   }
 }
+
+/* Logged-in header: greeting + logout on the first row, controls on the next row */
+.topbar{
+  flex-wrap:nowrap;
+  gap:10px;
+}
+.topbar .typing-fontory{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.topbar .auth-logout{
+  flex:0 0 auto;
+  margin-left:auto;
+}
+.auth-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+  gap:7px;
+  margin-top:8px;
+}
+.auth-actions .theme{
+  order:0;
+}
+.auth-actions button{
+  flex:0 0 auto;
+}
+@media(max-width:620px){
+  .auth-actions{
+    justify-content:flex-end;
+    gap:6px;
+    margin-top:7px;
+  }
+  .auth-actions button{
+    min-height:36px;
+    padding:7px 9px;
+    font-size:10px;
+  }
+  .topbar .auth-logout{
+    padding:7px 9px;
+    font-size:10px;
+  }
+}
