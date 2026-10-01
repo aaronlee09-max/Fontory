@@ -1,6 +1,28 @@
 (() => {
   const mount = () => {
     if (!document.body || document.querySelector(".ambient-layer")) return;
+    const typingLayer = document.createElement("div");
+    typingLayer.className = "typing-bg-layer";
+    typingLayer.setAttribute("aria-hidden", "true");
+    const phrases = [
+      "Fontory", "Aa", "한글", "Typography", "font-family",
+      "오늘도 예쁘게 기록해요", "serif", "sans-serif", "𝒜", "글꼴",
+      "font-weight", "line-height", "letter-spacing", "0101", "010",
+      "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo"
+    ];
+    phrases.forEach((phrase, index) => {
+      const node = document.createElement("span");
+      node.className = "typing-bg-text";
+      node.textContent = phrase;
+      node.style.setProperty("--x", `${(index * 29 + 3) % 92}%`);
+      node.style.setProperty("--y", `${(index * 47 + 7) % 94}%`);
+      node.style.setProperty("--delay", `${(index % 9) * -1.6}s`);
+      node.style.setProperty("--duration", `${10 + (index % 6) * 2.5}s`);
+      node.style.setProperty("--typing", `${1.8 + (index % 5) * .35}s`);
+      node.style.setProperty("--size", `${11 + (index % 5) * 3}px`);
+      typingLayer.appendChild(node);
+    });
+    layer.appendChild(typingLayer);
     const layer = document.createElement("div");
     layer.className = "ambient-layer";
     layer.setAttribute("aria-hidden", "true");
