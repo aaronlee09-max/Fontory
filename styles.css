@@ -818,3 +818,49 @@ body.dark .category-bar .chip.active{
 
 /* Fontory mobile overrides */
 html,body{width:100%;max-width:100%;overflow-x:hidden}body{-webkit-text-size-adjust:100%}.app-shell{width:100%;padding:0 14px 150px}.hero{padding:14px 0 12px}h1{font-size:clamp(40px,13vw,64px);line-height:.94;margin:34px 0 16px}.hero>p{font-size:14px;line-height:1.5}.search-wrap input{font-size:16px}.category-bar{padding:5px 5px 0;min-height:44px;gap:3px}.chip{padding:9px 10px 10px;font-size:11px}.global-preview-bar{top:6px;margin:0 0 14px;padding:11px 12px;border-radius:0 0 16px 16px}.global-preview-heading strong{font-size:12px}.global-preview-heading small{font-size:9px}.global-preview-input-wrap input{font-size:14px;padding:10px 0}.intro-card{margin:12px 0 18px;border-radius:19px;padding:18px}.intro-card h2{font-size:21px}.intro-card p{font-size:12px}.font-grid{grid-template-columns:1fr;gap:10px}.font-card{border-radius:17px;padding:16px}.font-name{font-size:16px}.preview{font-size:27px;white-space:normal;overflow-wrap:anywhere}.preview-sub{font-size:13px}.try-font-input{font-size:14px;padding:10px}.try-font-result{font-size:22px}.actions{flex-direction:column}.selection-bar{left:10px;right:10px;bottom:10px;transform:none;width:auto;display:block;padding:12px;border-radius:15px}.selection-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.selection-bar button{width:100%;padding:11px 7px;font-size:11px}.download-progress{padding:14px}.download-progress-card{width:100%;padding:22px 17px;border-radius:19px}.download-progress-title{font-size:23px}footer{padding:32px 2px 5px}.auth-card{width:calc(100vw - 28px)!important;max-width:none!important;max-height:calc(100vh - 28px);overflow:auto}.auth-card input,.auth-card button{min-height:44px}@media(min-width:621px){body{display:none!important}}
+
+
+/* Fontory animated typing background */
+.typing-bg-layer{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:.34;
+}
+.typing-bg-text{
+  position:absolute;
+  left:var(--x);
+  top:var(--y);
+  max-width:min(34vw,320px);
+  color:rgba(0,113,227,.16);
+  font-family:"SF Mono","Cascadia Code","Noto Sans KR",monospace;
+  font-size:var(--size);
+  font-weight:700;
+  letter-spacing:.02em;
+  white-space:nowrap;
+  overflow:hidden;
+  border-right:1px solid rgba(0,113,227,.28);
+  clip-path:inset(0 100% 0 0);
+  transform:translate3d(0,10px,0);
+  animation:
+    fontory-bg-type var(--typing) steps(24,end) var(--delay) infinite alternate,
+    fontory-bg-float var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+@keyframes fontory-bg-type{
+  0%,12%{clip-path:inset(0 100% 0 0);opacity:0}
+  45%,78%{clip-path:inset(0 0 0 0);opacity:1}
+  100%{clip-path:inset(0 0 0 0);opacity:.35}
+}
+@keyframes fontory-bg-float{
+  from{transform:translate3d(-10px,12px,0)}
+  to{transform:translate3d(22px,-20px,0)}
+}
+body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(100,170,255,.32)}
+@media(max-width:620px){
+  .typing-bg-layer{opacity:.24}
+  .typing-bg-text{max-width:58vw;font-size:var(--size);filter:blur(.1px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .typing-bg-text{animation:none;clip-path:inset(0 0 0 0);opacity:.45}
+}
