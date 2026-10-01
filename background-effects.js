@@ -1,15 +1,22 @@
 (() => {
   const mount = () => {
     if (!document.body || document.querySelector(".ambient-layer")) return;
+
+    const layer = document.createElement("div");
+    layer.className = "ambient-layer";
+    layer.setAttribute("aria-hidden", "true");
+
     const typingLayer = document.createElement("div");
     typingLayer.className = "typing-bg-layer";
     typingLayer.setAttribute("aria-hidden", "true");
+
     const phrases = [
       "Fontory", "Aa", "한글", "Typography", "font-family",
       "오늘도 예쁘게 기록해요", "serif", "sans-serif", "𝒜", "글꼴",
       "font-weight", "line-height", "letter-spacing", "0101", "010",
       "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo"
     ];
+
     phrases.forEach((phrase, index) => {
       const node = document.createElement("span");
       node.className = "typing-bg-text";
@@ -22,15 +29,15 @@
       node.style.setProperty("--size", `${11 + (index % 5) * 3}px`);
       typingLayer.appendChild(node);
     });
+
     layer.appendChild(typingLayer);
-    const layer = document.createElement("div");
-    layer.className = "ambient-layer";
-    layer.setAttribute("aria-hidden", "true");
+
     ["ambient-orb orb-one", "ambient-orb orb-two", "ambient-orb orb-three"].forEach((className) => {
       const orb = document.createElement("span");
       orb.className = className;
       layer.appendChild(orb);
     });
+
     const glyphs = ["A", "あ", "한", "가", "B", "文", "✦", "𝒜", "폰", "G", "∞", "글", "R", "字", "Aa", "S", "ㅋ", "𝓕", "N", "ㅍ"];
     glyphs.forEach((glyph, index) => {
       const node = document.createElement("span");
@@ -45,8 +52,13 @@
       node.style.setProperty("--blur", `${2 + (index % 4)}px`);
       layer.appendChild(node);
     });
+
     document.body.prepend(layer);
   };
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount, { once: true });
-  else mount();
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mount, { once: true });
+  } else {
+    mount();
+  }
 })();
