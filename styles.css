@@ -991,3 +991,13 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
 .hero-typing-title{
   contain:layout paint;
 }
+
+/* Mobile animation performance guard */
+.hero-typing-title,
+.hero-typing-title > span{contain:layout paint;}
+@media(max-width:620px){
+  .typing-bg-text:nth-child(n+9){display:none;}
+  .ambient-glyph:nth-of-type(n+12){display:none;}
+  .ambient-glyph{filter:none;}
+  .ambient-layer::before{animation-duration:24s;}
+}
