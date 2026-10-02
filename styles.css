@@ -979,3 +979,15 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
     word-break:keep-all !important;
   }
 }
+
+
+/* Hero typing performance + two-line layout */
+.hero-typing-title,
+.hero-typing-title span{
+  white-space:pre-line !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+.hero-typing-title{
+  contain:layout paint;
+}
