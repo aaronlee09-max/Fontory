@@ -1025,3 +1025,14 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
   #fontoryAuth .auth-card small{font-size:9px;margin-top:14px;}
   #fontoryAuth .auth-typing-greeting{font-size:17px !important;height:46px !important;min-height:46px !important;max-height:46px !important;}
 }
+
+
+/* Hero responsive sizing: phone and iPad */
+@media(max-width:620px){
+  .hero-typing-title{font-size:clamp(32px,9.5vw,48px);line-height:1.05;letter-spacing:-.045em;}
+  .hero-typing-title > span{white-space:pre;}
+}
+@media(min-width:621px) and (max-width:1100px){
+  .hero-typing-title{font-size:clamp(42px,5.2vw,58px);line-height:1.05;letter-spacing:-.045em;}
+  .hero-typing-title > span{white-space:pre;}
+}
