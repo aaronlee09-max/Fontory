@@ -1005,3 +1005,23 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
 /* Hero: exactly two lines on mobile */
 .hero-typing-title > span{white-space:pre;}
 @media(max-width:620px){.hero-typing-title > span{font-size:19px;line-height:1.35;}}
+
+
+/* Phone login screen sizing */
+@media(max-width:620px){
+  #fontoryAuth{padding:12px;}
+  #fontoryAuth .auth-card{
+    width:min(320px,calc(100vw - 32px)) !important;
+    padding:20px 16px !important;
+    border-radius:20px !important;
+    max-height:calc(100vh - 24px);
+  }
+  #fontoryAuth .auth-card h1{font-size:24px;line-height:1.2;margin:6px 0 8px;}
+  #fontoryAuth .auth-card p{font-size:12px;line-height:1.45;margin-bottom:16px;}
+  #fontoryAuth .auth-card label{font-size:11px;margin:10px 0;}
+  #fontoryAuth .auth-card input{font-size:14px;padding:11px 12px;margin-top:5px;}
+  #fontoryAuth .auth-card form button,
+  #fontoryAuth .auth-card .auth-passkey{font-size:13px;padding:11px 12px;}
+  #fontoryAuth .auth-card small{font-size:9px;margin-top:14px;}
+  #fontoryAuth .auth-typing-greeting{font-size:17px !important;height:46px !important;min-height:46px !important;max-height:46px !important;}
+}
