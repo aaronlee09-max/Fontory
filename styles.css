@@ -1032,3 +1032,48 @@ body.dark .typing-bg-text{color:rgba(100,170,255,.18);border-right-color:rgba(10
   .hero-typing-title{font-size:clamp(42px,5.2vw,58px);line-height:1.05;letter-spacing:-.045em;}
   .hero-typing-title > span{white-space:pre;}
 }
+
+
+/* Keep the preview bar sticky for the whole catalog, not just its former header parent. */
+#globalPreviewBar.global-preview-bar {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 48px);
+  left: auto;
+  right: auto;
+  transform: none;
+  width: auto;
+  z-index: 110;
+}
+#categoryBar.category-bar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 120;
+}
+@media (max-width: 620px) {
+  #globalPreviewBar.global-preview-bar {
+    top: calc(env(safe-area-inset-top, 0px) + 44px);
+  }
+  #categoryBar.category-bar {
+    top: env(safe-area-inset-top, 0px);
+  }
+}
+
+/* A single-font download window is a focused progress page, without the catalog UI. */
+body.download-popup .ambient-layer,
+body.download-popup .app-shell > :not(#downloadProgress) {
+  display: none !important;
+}
+body.download-popup {
+  min-height: 100vh;
+  background: #080a12;
+}
+body.download-popup .app-shell {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+body.download-popup #downloadProgress {
+  z-index: 9990;
+}
