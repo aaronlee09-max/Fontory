@@ -1462,7 +1462,7 @@ async function downloadSingleFont(font, button) {
   try {
     const durationMs = await startDownloadMusic();
     window.fontorySetDownloadFont?.(font);
-    await waitForSimulatedDownload(durationMs);
+    if (!window.__fontorySkipDownloadWait) { await waitForSimulatedDownload(durationMs); } else { updateDownloadProgress(100, "파일을 저장하는 중…"); window.fontoryResetDownloadMusicJob?.(); }
     window.fontorySetDownloadFont?.(font);
     updateDownloadProgress(100, `${font.name} 파일을 저장하는 중…`);
     const blob = await fetchFontBlob(font);
@@ -1498,7 +1498,7 @@ async function downloadSelectedWindows() {
   try {
     const durationMs = await startDownloadMusic();
     window.fontorySetDownloadFont?.(chosen[0]);
-    await waitForSimulatedDownload(durationMs);
+    if (!window.__fontorySkipDownloadWait) { await waitForSimulatedDownload(durationMs); } else { updateDownloadProgress(100, "파일을 저장하는 중…"); window.fontoryResetDownloadMusicJob?.(); }
     for (let index = 0; index < chosen.length; index++) {
       const font = chosen[index];
       window.fontorySetDownloadFont?.(font);
@@ -1535,7 +1535,7 @@ async function makeMobileConfig() {
   try {
     const durationMs = await startDownloadMusic();
     window.fontorySetDownloadFont?.(chosen[0]);
-    await waitForSimulatedDownload(durationMs);
+    if (!window.__fontorySkipDownloadWait) { await waitForSimulatedDownload(durationMs); } else { updateDownloadProgress(100, "파일을 저장하는 중…"); window.fontoryResetDownloadMusicJob?.(); }
   } catch (error) {
     window.fontoryResetDownloadMusicJob?.();
     releaseDownloadLock();
