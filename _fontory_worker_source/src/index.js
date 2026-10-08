@@ -93,6 +93,38 @@ function isValidEmail(email) {
   return typeof email === "string" && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// ---------------- 중앙 음악 설정 ----------------
+
+async function handleGetMusic(request, env) {
+  const rows = await db.getMusicSettings(env.DB);
+  const settings = Object.fromEntries(rows.map((row) => [row.setting_key, row]));
+  return json(env, {
+    musicId: settings.global_music?.music_id || null,
+    loginMusicId: settings.global_music?.music_id || null,
+    downloadMode: settings.download_music_mode?.setting_value === "random" ? "random" : "admin-selected",
+    downloadMusicId: settings.download_music?.music_id || null,
+  });
+}
+
+async function handleSetMusic(request, env) {
+  const { error } = await requireAdmin(request, env);
+  if (error) return error;
+
+  const body = await request.json().catch(() => ({}));
+  const loginMusicId = typeof body.loginMusicId === "string" ? body.loginMusicId.trim() : (typeof body.musicId === "string" ? body.musicId.trim() : "");
+  const downloadMusicId = typeof body.downloadMusicId === "string" ? body.downloadMusicId.trim() : "";
+  const downloadMode = body.downloadMode === "random" ? "random" : "admin-selected";
+  const validate = (value) => !value || (value.length <= 128 && /^[a-zA-Z0-9._-]+$/.test(value));
+  if (!validate(loginMusicId) || !validate(downloadMusicId)) {
+    return badRequest(env, "음악 ID 형식이 올바르지 않습니다.");
+  }
+
+  if (loginMusicId) await db.setAppSetting(env.DB, "global_music", loginMusicId, null);
+  if (downloadMusicId) await db.setAppSetting(env.DB, "download_music", downloadMusicId, null);
+  await db.setAppSetting(env.DB, "download_music_mode", null, downloadMode);
+  return json(env, { ok: true, musicId: loginMusicId || null, loginMusicId: loginMusicId || null, downloadMode, downloadMusicId: downloadMusicId || null });
+}
+
 // ---------------- 라우트 핸들러 ----------------
 
 async function handleLogin(request, env) {
@@ -411,6 +443,13 @@ async function handleSetupAdmin(request, env) {
 
 export default {
   async fetch(request, env) {
+    // Keep the existing PC ALLOWED_ORIGIN binding; echo only the explicitly approved mobile origin.
+    const requestedOrigin = request.headers.get("Origin");
+    if (requestedOrigin === "https://m.softronics.run.place") {
+      const requestEnv = Object.create(env);
+      Object.defineProperty(requestEnv, "ALLOWED_ORIGIN", { value: requestedOrigin });
+      env = requestEnv;
+    }
     const url = new URL(request.url);
     const { pathname } = url;
 
@@ -427,6 +466,9 @@ export default {
       if (pathname === "/api/auth/me" && request.method === "GET") return await handleMe(request, env);
       if (pathname === "/api/account/email" && request.method === "PATCH") return await handleUpdateOwnEmail(request, env);
       if (pathname === "/api/account/password" && request.method === "PATCH") return await handleChangeOwnPassword(request, env);
+
+      if (pathname === "/api/music" && request.method === "GET") return await handleGetMusic(request, env);
+      if (pathname === "/api/music" && request.method === "PATCH") return await handleSetMusic(request, env);
 
       if (pathname === "/api/accounts" && request.method === "GET") return await handleListAccounts(request, env);
       if (pathname === "/api/accounts" && request.method === "POST") return await handleCreateAccount(request, env);
