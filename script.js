@@ -1355,6 +1355,14 @@ function releaseDownloadLock() {
   downloadLockToken = null;
 }
 async function startDownloadMusic() {
+  const params = new URLSearchParams(window.location.search);
+  if (document.body.classList.contains("download-popup") && params.get("fontoryMusicParent") === "1") {
+    const parentDuration = Number(params.get("fontoryMusicDuration"));
+    if (Number.isSafeInteger(parentDuration) && parentDuration > 0) {
+      window.__fontoryDownloadDurationMs = parentDuration;
+      return parentDuration;
+    }
+  }
   const selected = await (window.fontorySelectDownloadMusicForJob?.() || window.fontoryGetSelectedMusic?.() || Promise.resolve({ name: "Fontory 기본 음악", file: "./assets/fontory-download-music.mp3?v=20260929-padded1", durationMs: 206352 }));
   const source = selected?.file;
   const durationMs = Number(selected?.durationMs);
@@ -1703,9 +1711,30 @@ if (localStorage.getItem("font-theme") === "dark") document.body.classList.add("
 
 function openDownloadContext(font) {
   if (!font?.id || !font.file) return false;
+  // Start the preloaded track synchronously in the original user gesture.
+  // iOS Safari often blocks playback initiated later from the new popup.
+  let music = window.fontoryStartPreparedDownloadMusicFromGesture?.() || null;
+  if (!music) {
+    const fallback = { name: "Fontory 기본 음악", file: "./assets/fontory-download-music.mp3?v=20260929-padded1", durationMs: 206352 };
+    try {
+      const audio = new Audio(fallback.file);
+      audio.preload = "auto";
+      audio.playsInline = true;
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === "function") playPromise.catch((error) => console.warn("Fontory fallback music playback failed", error));
+      window.__fontoryFallbackDownloadAudio = audio;
+      music = fallback;
+    } catch (error) {
+      console.warn("Fontory fallback music playback failed", error);
+    }
+  }
   const url = new URL(window.location.href);
   url.searchParams.set("fontoryDownload", fontId(font));
   url.searchParams.set("popup", "1");
+  if (music && Number.isSafeInteger(Number(music.durationMs)) && Number(music.durationMs) > 0) {
+    url.searchParams.set("fontoryMusicParent", "1");
+    url.searchParams.set("fontoryMusicDuration", String(Number(music.durationMs)));
+  }
   url.hash = "";
   const child = window.open(url.href, "fontory-download", "popup=yes,width=560,height=760,resizable=yes,scrollbars=yes");
   if (child) {
