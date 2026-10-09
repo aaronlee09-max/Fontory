@@ -118,12 +118,58 @@
     downloadJobPromise = null;
   }
 
+  // Prepare the selected download track before the user's tap so iOS Safari
+  // can start playback directly inside the original click gesture.
+  let preparedDownloadAudio = null;
+  let preparedDownloadTrack = null;
+  let preparingDownloadAudio = null;
+  async function prepareDownloadAudio() {
+    if (preparedDownloadAudio && preparedDownloadTrack) return preparedDownloadTrack;
+    if (!preparingDownloadAudio) {
+      preparingDownloadAudio = (async () => {
+        const track = await selectDownloadMusicForJob();
+        const audio = new Audio(track.file);
+        audio.preload = "auto";
+        audio.playsInline = true;
+        audio.setAttribute("playsinline", "");
+        audio.load();
+        preparedDownloadAudio = audio;
+        preparedDownloadTrack = track;
+        return track;
+      })().catch((error) => {
+        preparingDownloadAudio = null;
+        console.warn("Fontory download music preloading failed", error);
+        return null;
+      });
+    }
+    return preparingDownloadAudio;
+  }
+
+  function startPreparedDownloadMusicFromGesture() {
+    if (!preparedDownloadAudio || !preparedDownloadTrack) return null;
+    try {
+      preparedDownloadAudio.pause();
+      preparedDownloadAudio.currentTime = 0;
+    } catch {}
+    try {
+      const playPromise = preparedDownloadAudio.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch((error) => console.warn("Fontory download music playback failed", error));
+      }
+    } catch (error) {
+      console.warn("Fontory download music playback failed", error);
+    }
+    return { name: preparedDownloadTrack.name, file: preparedDownloadTrack.file, durationMs: preparedDownloadTrack.durationMs };
+  }
+
   window.fontoryGetMusicCatalog = getCatalog;
   window.fontoryGetMusicSettings = getSettings;
   window.fontoryGetSelectedMusic = getSelected;
   window.fontoryGetMusicUrl = async () => (await getSelected()).file;
   window.fontorySelectDownloadMusicForJob = selectDownloadMusicForJob;
   window.fontoryResetDownloadMusicJob = resetDownloadMusicJob;
+  window.fontoryStartPreparedDownloadMusicFromGesture = startPreparedDownloadMusicFromGesture;
+  void prepareDownloadAudio();
   window.fontoryResetMusicCache = () => {
     catalogPromise = null;
     settingsPromise = null;
