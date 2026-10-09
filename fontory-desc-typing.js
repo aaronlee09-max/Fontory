@@ -79,7 +79,7 @@
         window.clearInterval(typingTimer);
         typingTimer = null;
       }
-    }, 48);
+    }, 85);
   }
 
   function applyCardPreviewFont(font) {
