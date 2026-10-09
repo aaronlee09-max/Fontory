@@ -1493,7 +1493,7 @@ async function downloadSelectedWindows() {
   const chosen = fonts.filter((f) => selected.has(fontId(f)) && windowsInstallable(f));
   if (!chosen.length) return;
 
-  if (chosen.length > 1) {
+  if (chosen.length > 1 && !window.__fontorySkipBundleConfirm) {
     const ok = confirm(`${chosen.length}개의 Windows 폰트를 차례로 다운로드할까요? 브라우저에서 여러 다운로드 허용을 요청할 수 있습니다.`);
     if (!ok) return;
   }
@@ -1705,9 +1705,48 @@ document.querySelector("#makeProfile").addEventListener("click", () => {
   makeMobileConfig().catch((error) => alert(error.message));
 });
 document.querySelector("#downloadWindows").addEventListener("click", () => {
+  const chosen = fonts.filter((font) => selected.has(fontId(font)) && windowsInstallable(font));
+  if (chosen.length && openBundleDownloadContext(chosen)) return;
   downloadSelectedWindows().catch((error) => alert(error.message));
 });
 if (localStorage.getItem("font-theme") === "dark") document.body.classList.add("dark");
+
+function openBundleDownloadContext(chosen) {
+  if (!Array.isArray(chosen) || !chosen.length) return false;
+  const ids = chosen.map((font) => fontId(font)).filter(Boolean);
+  if (!ids.length) return false;
+  // Start music synchronously from the user's tap for iOS Safari.
+  let music = window.fontoryStartPreparedDownloadMusicFromGesture?.() || null;
+  if (!music) {
+    const fallback = { name: "Fontory 기본 음악", file: "./assets/fontory-download-music.mp3?v=20260929-padded1", durationMs: 206352 };
+    try {
+      const audio = new Audio(fallback.file);
+      audio.preload = "auto";
+      audio.playsInline = true;
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === "function") playPromise.catch((error) => console.warn("Fontory bundle music playback failed", error));
+      window.__fontoryFallbackDownloadAudio = audio;
+      music = fallback;
+    } catch (error) {
+      console.warn("Fontory bundle music playback failed", error);
+    }
+  }
+  const url = new URL(window.location.href);
+  url.searchParams.delete("fontoryDownload");
+  url.searchParams.set("fontoryBundle", ids.join(","));
+  url.searchParams.set("popup", "1");
+  if (music && Number.isSafeInteger(Number(music.durationMs)) && Number(music.durationMs) > 0) {
+    url.searchParams.set("fontoryMusicParent", "1");
+    url.searchParams.set("fontoryMusicDuration", String(Number(music.durationMs)));
+  }
+  url.hash = "";
+  const child = window.open(url.href, "fontory-download-bundle", "popup=yes,width=560,height=760,resizable=yes,scrollbars=yes");
+  if (child) {
+    try { child.opener = null; } catch {}
+    return true;
+  }
+  return false;
+}
 
 function openDownloadContext(font) {
   if (!font?.id || !font.file) return false;
@@ -1746,6 +1785,18 @@ function openDownloadContext(font) {
 
 async function runDownloadFromQuery() {
   const params = new URLSearchParams(window.location.search);
+  const bundleIds = (params.get("fontoryBundle") || "").split(",").filter(Boolean);
+  if (bundleIds.length) {
+    document.body.classList.add("download-popup");
+    window.__fontorySkipBundleConfirm = true;
+    bundleIds.forEach((id) => selected.add(id));
+    const chosen = fonts.filter((font) => selected.has(fontId(font)) && windowsInstallable(font));
+    if (!chosen.length) return;
+    document.title = `Fontory · ${chosen.length}개 폰트 번들 다운로드`;
+    render();
+    await downloadSelectedWindows();
+    return;
+  }
   const id = params.get("fontoryDownload");
   if (!id) return;
   const font = fonts.find((item) => fontId(item) === id);
