@@ -135,6 +135,7 @@
         audio.load();
         preparedDownloadAudio = audio;
         preparedDownloadTrack = track;
+        attachPreparedDownloadAudioSync(audio);
         return track;
       })().catch((error) => {
         preparingDownloadAudio = null;
@@ -145,8 +146,46 @@
     return preparingDownloadAudio;
   }
 
+  let downloadAudioSyncChannel = null;
+  function publishPreparedDownloadAudioState(extra = {}) {
+    if (typeof BroadcastChannel !== "function" || !preparedDownloadAudio) return;
+    try {
+      if (!downloadAudioSyncChannel) downloadAudioSyncChannel = new BroadcastChannel("fontory-download-audio-sync");
+      downloadAudioSyncChannel.postMessage({
+        type: "fontory-download-audio-state",
+        currentTime: Number(preparedDownloadAudio.currentTime) || 0,
+        paused: Boolean(preparedDownloadAudio.paused),
+        ended: Boolean(preparedDownloadAudio.ended),
+        ...extra
+      });
+    } catch (error) {
+      console.warn("Fontory audio progress sync failed", error);
+    }
+  }
+
+  function attachPreparedDownloadAudioSync(audio) {
+    if (audio.dataset.fontoryProgressSyncAttached === "1") return;
+    audio.dataset.fontoryProgressSyncAttached = "1";
+    ["timeupdate", "play", "playing", "pause", "ended", "error"].forEach((eventName) => {
+      audio.addEventListener(eventName, () => publishPreparedDownloadAudioState({
+        error: eventName === "error"
+      }));
+    });
+    if (typeof BroadcastChannel === "function") {
+      try {
+        if (!downloadAudioSyncChannel) downloadAudioSyncChannel = new BroadcastChannel("fontory-download-audio-sync");
+        downloadAudioSyncChannel.addEventListener("message", (event) => {
+          if (event.data?.type === "fontory-download-audio-state-request") publishPreparedDownloadAudioState();
+        });
+      } catch (error) {
+        console.warn("Fontory audio progress sync setup failed", error);
+      }
+    }
+  }
+
   function startPreparedDownloadMusicFromGesture() {
     if (!preparedDownloadAudio || !preparedDownloadTrack) return null;
+    attachPreparedDownloadAudioSync(preparedDownloadAudio);
     try {
       preparedDownloadAudio.pause();
       preparedDownloadAudio.currentTime = 0;
