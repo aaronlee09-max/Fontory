@@ -1790,117 +1790,38 @@ function openBundleDownloadContext(chosen) {
   if (!Array.isArray(chosen) || !chosen.length) return false;
   const ids = chosen.map((font) => fontId(font)).filter(Boolean);
   if (!ids.length) return false;
-  // Start music synchronously from the user's tap for iOS Safari.
-  let music = window.fontoryStartPreparedDownloadMusicFromGesture?.() || null;
-  if (!music) {
-    const fallback = { name: "Fontory 기본 음악", file: "./assets/fontory-download-music.mp3?v=20260929-padded1", durationMs: 206352 };
-    try {
-      const audio = new Audio(fallback.file);
-      audio.preload = "auto";
-      audio.playsInline = true;
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.catch === "function") playPromise.catch((error) => console.warn("Fontory bundle music playback failed", error));
-      window.__fontoryFallbackDownloadAudio = audio;
-      music = fallback;
-    } catch (error) {
-      console.warn("Fontory bundle music playback failed", error);
-    }
-  }
   const url = new URL(window.location.href);
   url.searchParams.delete("fontoryDownload");
   url.searchParams.set("fontoryBundle", ids.join(","));
   url.searchParams.set("popup", "1");
-  if (music && Number.isSafeInteger(Number(music.durationMs)) && Number(music.durationMs) > 0) {
-    url.searchParams.set("fontoryMusicParent", "1");
-    url.searchParams.set("fontoryMusicDuration", String(Number(music.durationMs)));
-  }
+  url.searchParams.delete("fontoryMusicParent");
+  url.searchParams.delete("fontoryMusicDuration");
   url.hash = "";
   const child = window.open(url.href, "fontory-download-bundle", "popup=yes,width=560,height=760,resizable=yes,scrollbars=yes");
   if (child) {
+    // Progress belongs to the download popup, never the source tab.
+    const sourceProgress = document.querySelector("#downloadProgress");
+    if (sourceProgress) sourceProgress.hidden = true;
     try { child.opener = null; } catch {}
     return true;
   }
   return false;
 }
-
 function openDownloadContext(font) {
   if (!font?.id || !font.file) return false;
-  // Start the preloaded track synchronously in the original user gesture.
-  // iOS Safari often blocks playback initiated later from the new popup.
-  let music = window.fontoryStartPreparedDownloadMusicFromGesture?.() || null;
-  if (!music) {
-    const fallback = { name: "Fontory 기본 음악", file: "./assets/fontory-download-music.mp3?v=20260929-padded1", durationMs: 206352 };
-    try {
-      const audio = new Audio(fallback.file);
-      audio.preload = "auto";
-      audio.playsInline = true;
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.catch === "function") playPromise.catch((error) => console.warn("Fontory fallback music playback failed", error));
-      window.__fontoryFallbackDownloadAudio = audio;
-      music = fallback;
-    } catch (error) {
-      console.warn("Fontory fallback music playback failed", error);
-    }
-  }
   const url = new URL(window.location.href);
   url.searchParams.set("fontoryDownload", fontId(font));
   url.searchParams.set("popup", "1");
-  if (music && Number.isSafeInteger(Number(music.durationMs)) && Number(music.durationMs) > 0) {
-    url.searchParams.set("fontoryMusicParent", "1");
-    url.searchParams.set("fontoryMusicDuration", String(Number(music.durationMs)));
-  }
+  url.searchParams.delete("fontoryMusicParent");
+  url.searchParams.delete("fontoryMusicDuration");
   url.hash = "";
   const child = window.open(url.href, "fontory-download", "popup=yes,width=560,height=760,resizable=yes,scrollbars=yes");
   if (child) {
+    // Progress belongs to the download popup, never the source tab.
+    const sourceProgress = document.querySelector("#downloadProgress");
+    if (sourceProgress) sourceProgress.hidden = true;
     try { child.opener = null; } catch {}
     return true;
   }
   return false;
 }
-
-async function runDownloadFromQuery() {
-  const params = new URLSearchParams(window.location.search);
-  const bundleIds = (params.get("fontoryBundle") || "").split(",").filter(Boolean);
-  if (bundleIds.length) {
-    document.body.classList.add("download-popup");
-    window.__fontorySkipBundleConfirm = true;
-    bundleIds.forEach((id) => selected.add(id));
-    const chosen = fonts.filter((font) => selected.has(fontId(font)) && windowsInstallable(font));
-    if (!chosen.length) return;
-    document.title = `Fontory · ${chosen.length}개 폰트 번들 다운로드`;
-    render();
-    await downloadSelectedWindows();
-    return;
-  }
-  const id = params.get("fontoryDownload");
-  if (!id) return;
-  const font = fonts.find((item) => fontId(item) === id);
-  if (!font) return;
-  document.body.classList.add("download-popup");
-  document.title = `Fontory · ${font.name} 다운로드`;
-  render();
-  await downloadSingleFont(font, { disabled: false, textContent: "다운로드" });
-}
-
-async function init() {
-  try {
-    const response = await fetch("./fonts.json", { cache: "no-store" });
-    if (!response.ok) throw new Error("fonts.json을 불러오지 못했습니다.");
-    const data = await response.json();
-    fonts = Array.isArray(data) ? data : [];
-    if (!fonts.length) {
-      statusBanner.hidden = false;
-      statusBanner.textContent = "원본 폰트 ZIP이 저장소에서 확인되지 않아 카드에 연결할 파일이 없습니다. 폰트 파일을 fonts/ 아래 카테고리 폴더에 넣은 뒤 fonts.json을 갱신하면 목록이 채워집니다.";
-    }
-    render();
-    await runDownloadFromQuery();
-  } catch (error) {
-    fonts = [];
-    count.textContent = "0 fonts";
-    empty.hidden = false;
-    empty.textContent = "폰트 목록을 불러오지 못했습니다.";
-    console.error(error);
-  }
-}
-
-init();
